@@ -1,5 +1,5 @@
 /*var site_url = window.location.protocol+'://'+window.location.hostname;*/
-var site_url = window.location.origin+'/plat/admin';
+var site_url = window.location.origin+'/platgit/admin';
 console.log(site_url);
 function goTop(){
 	 $('body, html').animate({scrollTop: $("#app").offset().top	});
