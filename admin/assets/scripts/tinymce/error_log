@@ -1,0 +1,1 @@
+[28-Mar-2017 04:56:25 America/Denver] PHP Fatal error:  Using $this when not in object context in /home/kisankra/public_html/admin/assets/js/tinymce/add_questions.php on line 25

@@ -1,0 +1,79 @@
+
+					 else if($report_type=='empprfrm' &&  $emp_id =='all' ){
+						 $sql ="SELECT
+								(SELECT count(`cl_id`) FROM call_log
+							WHERE
+								emp_id = e.emp_id  AND 
+								date(`cl_created_on`) >='$from' AND 
+								date(`cl_created_on`)<='$to') AS calls,
+								
+								(SELECT count(`cl_id`) FROM call_log
+							WHERE
+								emp_id = e.emp_id  AND 
+								date(`cl_created_on`) >='$from' AND 
+								date(`cl_created_on`)<='$to' AND  
+								`patient_response` = 'Schedule Appointment' )   AS apts,e.emp_firstname ,e.emp_lastname,e.emp_id
+							FROM 
+								call_log as c 
+							JOIN
+								employee as e on e.emp_id = c.emp_id 
+							GROUP BY e.emp_id ";
+						 $td = $this->timeclock_model->query($sql);
+						// print_r($td);exit;
+						 $sql1 ="SELECT 
+									*
+								FROM 
+									`time_clock`
+								
+								WHERE  time_in_date>='$from' AND time_in_date<='$to' ORDER BY emp_id ASC";
+								
+						 $wh = $this->timeclock_model->query_empwise($sql1);
+						 //print_r($wh['data']);exit;
+								/* $emp_calls = array();
+								 $emp_apts = array();
+								 if($td['num']>0){
+									 foreach($td['data'] as $c){
+										 $emp_calls[$c->emp_id]=$c->calls;
+										 $emp_apts[$c->emp_id]=$c->apts;
+									 }
+								 }*/
+						 if($td['num']>0){
+							 $success=true;
+							 $tbl.='<thead>
+										<tr><th>Employee Name</th><th>Calls Made</th><th>Appointments</th><th>CPH</th><th>APH</th</tr>
+									</thead>
+										<tbody>';
+							$total=0;
+							$crd_total=0;
+							foreach($td['data'] as $r){							 
+									foreach($wh['data'] as $k=>$v){
+										foreach($v as $c){
+											$datetime1 = new DateTime($c->time_in);
+											$datetime2 = new DateTime($c->time_out);
+											$interval = $datetime1->diff($datetime2);
+											if($interval->format('%h') == 0){
+												$difference = $interval->format('%i')." Minutes";
+											}else{
+												$difference = $interval->format('%h')." Hours ".$interval->format('%i')." Minutes";
+											}
+												//$time = $difference;
+												$time_in_sec = strtotime("1970-01-01 $difference UTC");
+												$total = bcadd($total,$time_in_sec);
+											  }
+										   }
+										       // $seconds = $total;
+												$total_time = gmdate('H:i:s', $total);
+											 
+												$wrkhr_in_sec =  strtotime("1970-01-01 $total_time UTC");
+												
+												$clls_pr_sc = bcdiv($r->calls,$wrkhr_in_sec,6);
+												$calls_per_hr = bcmul($clls_pr_sc,3600,2);
+												$apts_pr_sc = bcdiv($r->apts,$wrkhr_in_sec,6);
+												$apts_per_hr = bcmul($apts_pr_sc,3600,2); 
+																								
+									$tbl.='<tr><td>'.$r->emp_firstname.' '.$r->emp_lastname.'</td><td>'.$r->calls.'</td><td>'.$r->apts.'</td><td>'.round($calls_per_hr).'</td><td>'.round($apts_per_hr).'</td></tr>';
+							 }
+						 }else{
+							 $msg='No Records Found';
+						 }
+			         }

@@ -1,0 +1,17 @@
+SELECT
+	(SELECT count(`emp_id`) FROM call_log
+WHERE
+	emp_id = 2  AND 
+	date(`cl_created_on`) >='2017-10-03' AND 
+	date(`cl_created_on`)<='2017-11-01') AS calls,
+	(SELECT count(`emp_id`) FROM call_log
+WHERE
+	emp_id = '2'  AND 
+	date(`cl_created_on`) >='2017-10-03' AND 
+	date(`cl_created_on`)<='2017-11-01' AND  
+	`patient_response` = 'Schedule Appointment' )   AS apts,e.emp_firstname ,e.emp_lastname
+FROM 
+	call_log as c 
+JOIN
+	employee as e on e.emp_id = c.emp_id 
+WHERE e.emp_id = '2' GROUP BY e.emp_id; 
